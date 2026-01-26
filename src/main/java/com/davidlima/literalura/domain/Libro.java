@@ -19,7 +19,7 @@ public class Libro {
   @Column(unique = true)
   private String titulo;
 
-  @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.MERGE})
+  @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "autor_id")
   private Autor autor;
   private String idioma;
