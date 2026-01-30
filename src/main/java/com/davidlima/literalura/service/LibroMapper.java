@@ -26,7 +26,7 @@ public class LibroMapper {
                     : "Desconocido"
     );
     libro.setNumeroDeDescargas(
-            dto.numeroDescargas() != null ? dto.numeroDescargas() : 0
+            dto.numeroDeDescargas() != null ? dto.numeroDeDescargas() : 0
     );
     libro.setAutor(autor);
     return libro;

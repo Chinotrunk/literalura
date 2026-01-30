@@ -18,14 +18,14 @@ public interface LibroRepository extends JpaRepository<Libro, Long> {
 
   Long countByIdioma(String idioma);
 
-  List<Libro> findTop10ByOrderByNumeroDescargasDesc();
+  List<Libro> findTop10ByOrderByNumeroDeDescargasDesc();
 
-  @Query("SELECT MAX(l.numeroDescargas) FROM Libro l")
+  @Query("SELECT MAX(l.numeroDeDescargas) FROM Libro l")
   Integer findMaxDescargas();
 
-  @Query("SELECT MIN(l.numeroDescargas) FROM Libro l")
+  @Query("SELECT MIN(l.numeroDeDescargas) FROM Libro l")
   Integer findMinDescargas();
 
-  @Query("SELECT AVG(l.numeroDescargas) FROM Libro l")
+  @Query("SELECT AVG(l.numeroDeDescargas) FROM Libro l")
   Double findAvgDescargas();
 }
