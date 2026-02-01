@@ -12,8 +12,16 @@ public interface AutorRepository extends JpaRepository<Autor, Long> {
 
   Optional<Autor> findByNombre(String nombre);
 
-  @Query("SELECT a FROM Autor a WHERE a.fechaDeNacimiento <= :ano AND (a.fechaDeFallecimiento IS NULL OR a.fechaDeFallecimiento > :ano)")
+  @Query("""
+  SELECT DISTINCT a FROM Autor a
+  LEFT JOIN FETCH a.libros
+  WHERE a.fechaDeNacimiento <= :ano
+  AND (a.fechaDeFallecimiento IS NULL OR a.fechaDeFallecimiento >= :ano)
+  """)
   List<Autor> findAutoresVivosEnAno(@Param("ano") Integer ano);
 
   Boolean existsByNombre(String nombre);
+
+  @Query("SELECT DISTINCT a FROM Autor a LEFT JOIN FETCH a.libros")
+  List<Autor> findAllWithLibros();
 }

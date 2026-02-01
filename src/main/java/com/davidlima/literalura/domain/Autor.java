@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class Autor {
   private Integer fechaDeNacimiento;
   private Integer fechaDeFallecimiento;
 
-  @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @ToString.Exclude
   private List<Libro> libros = new ArrayList<>();
 }

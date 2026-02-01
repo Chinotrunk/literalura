@@ -9,26 +9,28 @@ import org.springframework.stereotype.Component;
 @Component
 public class LibroMapper {
 
-  public Autor toAutor(DatosAutor dto) {
-    Autor autor = new Autor();
-    autor.setNombre(dto.nombre());
-    autor.setFechaDeNacimiento(dto.fechaNacimiento());
-    autor.setFechaDeFallecimiento(dto.fechaFallecimiento());
-    return autor;
-  }
-
-  public Libro toLibro(DatosLibro dto, Autor autor) {
+  public Libro toLibro(DatosLibro datosLibro) {
     Libro libro = new Libro();
-    libro.setTitulo(dto.titulo());
-    libro.setIdioma(
-            dto.idiomas() != null && !dto.idiomas().isEmpty()
-                    ? dto.idiomas().get(0)
-                    : "Desconocido"
-    );
-    libro.setNumeroDeDescargas(
-            dto.numeroDeDescargas() != null ? dto.numeroDeDescargas() : 0
-    );
-    libro.setAutor(autor);
+    libro.setTitulo(datosLibro.titulo());
+    libro.setNumeroDeDescargas(datosLibro.numeroDeDescargas() != null ? datosLibro.numeroDeDescargas() : 0);
+
+    // Idioma
+    libro.setIdioma(datosLibro.idiomas() != null && !datosLibro.idiomas().isEmpty()
+            ? datosLibro.idiomas().get(0)
+            : "desconocido");
+
+    // Autor (solo el primero)
+    if (datosLibro.autores() != null && !datosLibro.autores().isEmpty()) {
+      DatosAutor datosAutor = datosLibro.autores().get(0);
+
+      Autor autor = new Autor();
+      autor.setNombre(datosAutor.nombre());
+      autor.setFechaDeNacimiento(datosAutor.fechaNacimiento());
+      autor.setFechaDeFallecimiento(datosAutor.fechaFallecimiento());
+
+      libro.setAutor(autor);
+    }
+
     return libro;
   }
 }

@@ -2,8 +2,6 @@ package com.davidlima.literalura.service;
 
 import com.davidlima.literalura.domain.Autor;
 import com.davidlima.literalura.domain.Libro;
-import com.davidlima.literalura.dto.DatosAutor;
-import com.davidlima.literalura.dto.DatosLibro;
 import com.davidlima.literalura.dto.DatosRespuestaAPI;
 import com.davidlima.literalura.repository.AutorRepository;
 import com.davidlima.literalura.repository.LibroRepository;
@@ -15,15 +13,11 @@ import java.util.Optional;
 @Service
 public class LibroService {
 
-  private LibroRepository libroRepository;
-
-  private AutorRepository autorRepository;
-
-  private LibroMapper mapper;
-
-  private ConsumoAPI consumoAPI;
-
-  private ConvierteDatos conversor;
+  private final LibroRepository libroRepository;
+  private final AutorRepository autorRepository;
+  private final LibroMapper mapper;
+  private final ConsumoAPI consumoAPI;
+  private final ConvierteDatos conversor;
 
   public LibroService(
           LibroRepository libroRepository,
@@ -39,48 +33,46 @@ public class LibroService {
     this.conversor = conversor;
   }
 
-  private static final String URL_BASE = "https://gutendex.com/books/?search=";
+  private static final String URL_BASE =
+          "https://gutendex.com/books/?search=";
 
   @Transactional
   public Libro buscarYGuardarLibro(String titulo) {
 
-    Optional<Libro> libroExistente =
-            libroRepository.findByTituloIgnoreCase(titulo);
+    // 1️⃣ Verificar duplicado
+    Optional<Libro> libroExistente = libroRepository.findByTituloIgnoreCase(titulo);
 
     if (libroExistente.isPresent()) {
-      System.out.println("\n⚠️  El libro ya está registrado en la base de datos\n");
+      System.out.println("\n⚠️ El libro ya está registrado\n");
       return libroExistente.get();
     }
 
-    String url = URL_BASE + titulo.replace(" ", "+");
-    String json = consumoAPI.obtenerDatos(url);
-    DatosRespuestaAPI respuesta =
-            conversor.obtenerDatos(json, DatosRespuestaAPI.class);
+    // 2️⃣ Consumir API
+    String json = consumoAPI.obtenerDatos(URL_BASE + titulo.replace(" ", "+"));
+    DatosRespuestaAPI respuesta = conversor.obtenerDatos(json, DatosRespuestaAPI.class);
 
     if (respuesta.results() == null || respuesta.results().isEmpty()) {
-      System.out.println("\n❌ No se encontró ningún libro con ese título\n");
+      System.out.println("\n❌ No se encontró el libro\n");
       return null;
     }
 
-    DatosLibro datosLibro = respuesta.results().get(0);
+    // 3️⃣ Mapear
+    Libro libro = mapper.toLibro(respuesta.results().get(0));
 
-    // Autor
-    DatosAutor datosAutor = datosLibro.autores().get(0);
-    Autor autor = mapper.toAutor(datosAutor);
+    // 4️⃣ Reutilizar autor si existe
+    if (libro.getAutor() != null) {
+      String nombreAutor = libro.getAutor().getNombre();
+      Autor autorExistente = autorRepository.findByNombre(nombreAutor).orElse(null);
 
-    Optional<Autor> autorExistente =
-            autorRepository.findByNombre(autor.getNombre());
-
-    if (autorExistente.isPresent()) {
-      autor = autorExistente.get();
+      if (autorExistente != null) {
+        libro.setAutor(autorExistente);
+      }
     }
 
-    // Libro
-    Libro libro = mapper.toLibro(datosLibro, autor);
-
-    Libro libroGuardado = libroRepository.save(libro);
+    // 5️⃣ Guardar
+    Libro guardado = libroRepository.save(libro);
     System.out.println("\n✅ Libro guardado exitosamente\n");
 
-    return libroGuardado;
+    return guardado;
   }
 }
